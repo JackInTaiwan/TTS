@@ -132,6 +132,7 @@ data/*
 LJSpeech-1.1.tar.bz2
 LJSpeech-1.1/
 mozilla_us_phonemes/
+
 # Keep
 keep/
 

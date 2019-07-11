@@ -33,7 +33,7 @@ torch.backends.cudnn.enabled = True
 torch.backends.cudnn.benchmark = False
 torch.manual_seed(54321)
 use_cuda = torch.cuda.is_available()
-num_gpus = torch.cuda.device_count()
+num_gpus = torch.cuda.device_count() if use_cuda else 1
 print(" > Using CUDA: ", use_cuda)
 print(" > Number of GPUs: ", num_gpus)
 
