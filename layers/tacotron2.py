@@ -191,10 +191,8 @@ class Decoder(nn.Module):
             self.attention_hidden, self.p_attention_dropout, self.training)
         self.attention_cell = F.dropout(
             self.attention_cell, self.p_attention_dropout, self.training)
-
         self.context = self.attention_layer(self.attention_hidden, self.inputs,
                                             self.processed_inputs, self.mask)
-
         memory = torch.cat((self.attention_hidden, self.context), -1)
         self.decoder_hidden, self.decoder_cell = self.decoder_rnn(
             memory, (self.decoder_hidden, self.decoder_cell))
@@ -205,20 +203,19 @@ class Decoder(nn.Module):
 
         decoder_hidden_context = torch.cat((self.decoder_hidden, self.context),
                                            dim=1)
-
         decoder_output = self.linear_projection(decoder_hidden_context)
 
         stopnet_input = torch.cat((self.decoder_hidden, decoder_output), dim=1)
-
         if self.separate_stopnet:
             stop_token = self.stopnet(stopnet_input.detach())
         else:
             stop_token = self.stopnet(stopnet_input)
+
         return decoder_output, stop_token, self.attention_layer.attention_weights
 
     def forward(self, inputs, memories, mask):
         memory = self.get_go_frame(inputs).unsqueeze(0)
-        memories = self._reshape_memory(memories)
+        memories = self._reshape_memory(memories).type_as(memory)
         memories = torch.cat((memory, memories), dim=0)
         memories = self.prenet(memories)
 

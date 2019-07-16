@@ -26,7 +26,8 @@ class MyDataset(Dataset):
                  phoneme_cache_path=None,
                  phoneme_language="en-us",
                  enable_eos_bos=False,
-                 verbose=False):
+                 verbose=False,
+                 use_half=False):
         """
         Args:
             root_path (str): root path for the data folder.

@@ -140,7 +140,7 @@ class Attention(nn.Module):
         T = inputs.shape[1]
         self.alpha = torch.cat(
             [torch.ones([B, 1]),
-             torch.zeros([B, T])[:, :-1] + 1e-7], dim=1).to(inputs.device)
+             torch.zeros([B, T])[:, :-1] + 1e-6], dim=1).to(inputs.device)
         self.u = (0.5 * torch.ones([B, 1])).to(inputs.device)
 
     def init_location_attention(self, inputs):
@@ -200,8 +200,17 @@ class Attention(nn.Module):
         prev_alpha = F.pad(self.alpha[:, :-1].clone(),
                            (1, 0, 0, 0)).to(inputs.device)
         # compute transition potentials
+
+        #-
+        # change the type of tensors
+        self.u = self.u.type_as(alignment)
+        self.alpha = self.alpha.type_as(alignment)
+        prev_alpha = prev_alpha.type_as(alignment)
+        #-
+        # change the epsilon for alpha
+        alpha_eps = 1e-8 if inputs.dtype != torch.half else 1e-6
         alpha = (((1 - self.u) * self.alpha.clone().to(inputs.device) +
-                  self.u * prev_alpha) + 1e-8) * alignment
+                  self.u * prev_alpha) + alpha_eps) * alignment
         # force incremental alignment - TODO: make configurable
         if not self.training:
             _, n = prev_alpha.max(1)

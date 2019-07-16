@@ -205,10 +205,11 @@ def sequence_mask(sequence_length, max_len=None):
     seq_range = torch.arange(0, max_len).long()
     seq_range_expand = seq_range.unsqueeze(0).expand(batch_size, max_len)
     if sequence_length.is_cuda:
-        seq_range_expand = seq_range_expand.cuda()
+        seq_range_expand = seq_range_expand.type(torch.long).cuda()
     seq_length_expand = (
         sequence_length.unsqueeze(1).expand_as(seq_range_expand))
     # B x T_max
+    seq_length_expand = seq_length_expand.type(torch.long)
     return seq_range_expand < seq_length_expand
 
 
