@@ -34,7 +34,7 @@
     "model": "Tacotron2",          // one of the model in models/    
     "grad_clip": 1,                // upper limit for gradients for clipping.
     "epochs": 1000,                // total number of epochs to train.
-    "lr": 0.00005,                  // Initial learning rate. If Noam decay is active, maximum learning rate.
+    "lr": 0.0001,                  // Initial learning rate. If Noam decay is active, maximum learning rate.
     "lr_decay": false,             // if true, Noam learning rate decaying is applied through training.
     "warmup_steps": 4000,          // Noam decay steps to increase the learning rate from 0 to "lr"
     "windowing": false,            // Enables attention windowing. Used only in eval mode.
@@ -60,7 +60,7 @@
     "print_step": 10,       // Number of steps to log traning on console.
     "batch_group_size": 0,  //Number of batches to shuffle after bucketing.
 
-    "run_eval": true,
+    "run_eval": false,
     "test_delay_epochs": 0,  //Until attention is aligned, testing only wastes computation time.
     "test_sentences_file": null,  // set a file to load sentences to be used for testing. If it is null then we use default english sentences.
     "data_path": "/home/ubuntu/TTS/LJSpeech-1.1",  // DATASET-RELATED: can overwritten from command argument
@@ -68,7 +68,7 @@
     "meta_file_val": "metadata_val.csv",    // DATASET-RELATED: metafile for evaluation dataloader.
     "dataset": "ljspeech",      // DATASET-RELATED: one of TTS.dataset.preprocessors depending on your target dataset. Use "tts_cache" for pre-computed dataset by extract_features.py
     "min_seq_len": 0,       // DATASET-RELATED: minimum text length to use in training
-    "max_seq_len": 150,     // DATASET-RELATED: maximum text length
+    "max_seq_len": 25,     // DATASET-RELATED: maximum text length
     "output_path": "./keep/",      // DATASET-RELATED: output path for all training outputs.
     "num_loader_workers": 6,        // number of training data loader processes. Don't set it too big. 4-8 are good values.
     "num_val_loader_workers": 6,    // number of evaluation data loader processes.
