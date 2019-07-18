@@ -122,7 +122,7 @@ def train(model, criterion, criterion_st, optimizer, optimizer_st, scheduler,
             stop_targets = stop_targets.cuda(non_blocking=True)
         decoder_output, postnet_output, alignments, stop_tokens = model(
             text_input, text_lengths,  mel_input)
-
+        
         # loss computation
         stop_loss = criterion_st(stop_tokens, stop_targets) if c.stopnet else torch.zeros(1)
 
@@ -142,7 +142,7 @@ def train(model, criterion, criterion_st, optimizer, optimizer_st, scheduler,
         if not c.separate_stopnet and c.stopnet:
             loss += stop_loss
 
-        USE_HALF_LOSS_SCALOR = 100.0
+        USE_HALF_LOSS_SCALOR = 10.0
 
         if use_half:
             loss = loss * USE_HALF_LOSS_SCALOR
@@ -452,11 +452,20 @@ def main(args):
     # use half mode
     if args.use_half:
         model = model.half()
+        for m in model.modules():
+            if isinstance(m, nn.BatchNorm1d):
+                m = m.float()
+        criterion = criterion.half()
+        criterion_st = criterion_st.half()
 
     if use_cuda:
         model = model.cuda()
         criterion.cuda()
         if criterion_st: criterion_st.cuda();
+    
+    # load optimizer
+    if args.restore_path:
+        optimizer.load_state_dict(checkpoint['optimizer'])
 
     # DISTRUBUTED
     if num_gpus > 1:
@@ -466,7 +475,8 @@ def main(args):
         scheduler = NoamLR(
             optimizer,
             warmup_steps=c.warmup_steps,
-            last_epoch=args.restore_step - 1)
+            last_epoch=args.restore_step - 1
+        )
     else:
         scheduler = None
 

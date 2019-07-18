@@ -1,0 +1,89 @@
+ > Using CUDA:  True
+ > Number of GPUs:  1
+ > Git Hash: cbb2c3a
+ > Experiment folder: /home/ubuntu/TTS/./keep/mozilla-no-loc-fattn-stopnet-sigmoid-loss_masking-July-18-2019_10+41AM-cbb2c3a
+ > Setting up Audio Processor...
+ | > bits:None
+ | > sample_rate:22050
+ | > num_mels:80
+ | > min_level_db:-100
+ | > frame_shift_ms:12.5
+ | > frame_length_ms:50
+ | > ref_level_db:20
+ | > num_freq:1025
+ | > power:1.5
+ | > preemphasis:0.98
+ | > griffin_lim_iters:60
+ | > signal_norm:True
+ | > symmetric_norm:False
+ | > mel_fmin:40.0
+ | > mel_fmax:1000.0
+ | > max_norm:1.0
+ | > clip_norm:True
+ | > do_trim_silence:False
+ | > n_fft:2048
+ | > hop_length:275
+ | > win_length:1102
+ > Using model: Tacotron2
+ | > Num output units : 1025
+ | > Use half mode
+ > Model restored from step 22000
+
+ > Model has 28180578 parameters
+
+ > DataLoader initialization
+ | > Data path: /home/ubuntu/TTS/LJSpeech-1.1
+ | > Use phonemes: True
+   | > phoneme language: en-us
+ | > Number of instances : 12000
+ | > Max length sequence: 187
+ | > Min length sequence: 5
+ | > Avg length sequence: 98.173
+ | > Num. instances discarded by max-min seq limits: 11813
+ | > Batch group size: 0.
+
+ > Epoch 0/1000
+None
+Warning: NaN or Inf found in input tensor.
+None
+Warning: NaN or Inf found in input tensor.
+Warning: NaN or Inf found in input tensor.
+Warning: NaN or Inf found in input tensor.
+Warning: NaN or Inf found in input tensor.
+None
+Warning: NaN or Inf found in input tensor.
+Warning: NaN or Inf found in input tensor.
+Warning: NaN or Inf found in input tensor.
+Warning: NaN or Inf found in input tensor.
+None
+Warning: NaN or Inf found in input tensor.
+Warning: NaN or Inf found in input tensor.
+Warning: NaN or Inf found in input tensor.
+Warning: NaN or Inf found in input tensor.
+None
+Warning: NaN or Inf found in input tensor.
+Warning: NaN or Inf found in input tensor.
+Warning: NaN or Inf found in input tensor.
+Warning: NaN or Inf found in input tensor.
+None
+Warning: NaN or Inf found in input tensor.
+Warning: NaN or Inf found in input tensor.
+Warning: NaN or Inf found in input tensor.
+Warning: NaN or Inf found in input tensor.
+None
+Warning: NaN or Inf found in input tensor.
+Warning: NaN or Inf found in input tensor.
+Warning: NaN or Inf found in input tensor.
+Warning: NaN or Inf found in input tensor.
+None
+Warning: NaN or Inf found in input tensor.
+Warning: NaN or Inf found in input tensor.
+Warning: NaN or Inf found in input tensor.
+Warning: NaN or Inf found in input tensor.
+None
+Warning: NaN or Inf found in input tensor.
+Warning: NaN or Inf found in input tensor.
+Warning: NaN or Inf found in input tensor.
+Warning: NaN or Inf found in input tensor.
+None
+   | > Step:9/11  GlobalStep:22010  TotalLoss:nan  PostnetLoss:nan  DecoderLoss:nan  StopLoss:nan  GradNorm:nan  GradNormST:nan  AvgTextLen:26.4  AvgSpecLen:152.4  StepTime:1.88  LR:0.000000
