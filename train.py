@@ -122,7 +122,7 @@ def train(model, criterion, criterion_st, optimizer, optimizer_st, scheduler,
             stop_targets = stop_targets.cuda(non_blocking=True)
         decoder_output, postnet_output, alignments, stop_tokens = model(
             text_input, text_lengths,  mel_input)
-        
+
         # loss computation
         stop_loss = criterion_st(stop_tokens, stop_targets) if c.stopnet else torch.zeros(1)
 
@@ -138,14 +138,15 @@ def train(model, criterion, criterion_st, optimizer, optimizer_st, scheduler,
                 postnet_loss = criterion(postnet_output, linear_input)
             else:
                 postnet_loss = criterion(postnet_output, mel_input)
+        USE_HALF_LOSS_SCALOR = 10.0
+        if use_half:
+            postnet_loss = postnet_loss * USE_HALF_LOSS_SCALOR
+            decoder_loss = decoder_loss * USE_HALF_LOSS_SCALOR
         loss = decoder_loss + postnet_loss
+
         if not c.separate_stopnet and c.stopnet:
             loss += stop_loss
 
-        USE_HALF_LOSS_SCALOR = 10.0
-
-        if use_half:
-            loss = loss * USE_HALF_LOSS_SCALOR
         loss.backward()
         optimizer, current_lr = weight_decay(optimizer, c.wd)
         grad_norm, _ = check_update(model, c.grad_clip)
@@ -153,8 +154,8 @@ def train(model, criterion, criterion_st, optimizer, optimizer_st, scheduler,
 
         # backpass and check the grad norm for stop loss
         if c.separate_stopnet:
-            if use_half:
-                stop_loss = stop_loss * USE_HALF_LOSS_SCALOR
+            USE_HALF_STOP_LOSS_SCALOR = 0.01
+            stop_loss = stop_loss * USE_HALF_STOP_LOSS_SCALOR
             stop_loss.backward()
             optimizer_st, _ = weight_decay(optimizer_st, c.wd)
             grad_norm_st, _ = check_update(model.decoder.stopnet, 1.0)
@@ -402,7 +403,7 @@ def main(args):
         init_distributed(args.rank, num_gpus, args.group_id,
                          c.distributed["backend"], c.distributed["url"])
     num_chars = len(phonemes) if c.use_phonemes else len(symbols)
-    model = setup_model(num_chars, c)
+    model = setup_model(num_chars, c, args.use_half)
 
     print(" | > Num output units : {}".format(ap.num_freq), flush=True)
 
@@ -451,21 +452,17 @@ def main(args):
 
     # use half mode
     if args.use_half:
-        model = model.half()
-        for m in model.modules():
-            if isinstance(m, nn.BatchNorm1d):
-                m = m.float()
-        criterion = criterion.half()
-        criterion_st = criterion_st.half()
+        model.half()
+        for layer in model.modules():
+            if isinstance(layer, torch.nn.BatchNorm1d):
+                layer.float()
 
     if use_cuda:
         model = model.cuda()
         criterion.cuda()
-        if criterion_st: criterion_st.cuda();
-    
-    # load optimizer
-    if args.restore_path:
-        optimizer.load_state_dict(checkpoint['optimizer'])
+        if criterion_st: criterion_st.cuda()
+        if args.restore_path:
+            optimizer.load_state_dict(checkpoint['optimizer'])
 
     # DISTRUBUTED
     if num_gpus > 1:
@@ -475,7 +472,8 @@ def main(args):
         scheduler = NoamLR(
             optimizer,
             warmup_steps=c.warmup_steps,
-            last_epoch=args.restore_step - 1
+            last_epoch=args.restore_step - 1,
+            use_half=args.use_half,
         )
     else:
         scheduler = None
@@ -544,6 +542,11 @@ if __name__ == '__main__':
         '--use_half',
         action="store_true",
         help='use the tensor.half as the parameters type.'
+    )
+    parser.add_argument(
+        '--lr_reset',
+        action="store_true",
+        help='reset lr.'
     )
 
     # DISTRUBUTED

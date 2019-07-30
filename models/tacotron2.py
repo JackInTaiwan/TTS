@@ -19,7 +19,8 @@ class Tacotron2(nn.Module):
                  forward_attn=False,
                  trans_agent=False,
                  location_attn=True,
-                 separate_stopnet=True):
+                 separate_stopnet=True,
+                 use_half=False):
         super(Tacotron2, self).__init__()
         self.n_mel_channels = 80
         self.n_frames_per_step = r
@@ -31,8 +32,8 @@ class Tacotron2(nn.Module):
         self.decoder = Decoder(512, self.n_mel_channels, r, attn_win,
                                attn_norm, prenet_type, prenet_dropout,
                                forward_attn, trans_agent, location_attn,
-                               separate_stopnet)
-        self.postnet = Postnet(self.n_mel_channels)
+                               separate_stopnet, use_half)
+        self.postnet = Postnet(self.n_mel_channels, use_half)
 
     def shape_outputs(self, mel_outputs, mel_outputs_postnet, alignments):
         mel_outputs = mel_outputs.transpose(1, 2)

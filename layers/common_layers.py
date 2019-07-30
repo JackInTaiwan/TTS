@@ -10,11 +10,14 @@ class Linear(nn.Module):
                  in_features,
                  out_features,
                  bias=True,
-                 init_gain='linear'):
+                 init_gain='linear',
+                 use_half=False
+                 ):
         super(Linear, self).__init__()
         self.linear_layer = torch.nn.Linear(
             in_features, out_features, bias=bias)
-        self._init_w(init_gain)
+        if not use_half:
+            self._init_w(init_gain)
 
     def _init_w(self, init_gain):
         torch.nn.init.xavier_uniform_(
@@ -30,12 +33,15 @@ class LinearBN(nn.Module):
                  in_features,
                  out_features,
                  bias=True,
-                 init_gain='linear'):
+                 init_gain='linear',
+                 use_half=False,
+        ):
         super(LinearBN, self).__init__()
         self.linear_layer = torch.nn.Linear(
             in_features, out_features, bias=bias)
         self.bn = nn.BatchNorm1d(out_features)
-        self._init_w(init_gain)
+        if not use_half:
+            self._init_w(init_gain)
 
     def _init_w(self, init_gain):
         torch.nn.init.xavier_uniform_(
@@ -58,19 +64,20 @@ class Prenet(nn.Module):
                  prenet_type="original",
                  prenet_dropout=True,
                  out_features=[256, 256],
-                 bias=True):
+                 bias=True,
+                 use_half=False):
         super(Prenet, self).__init__()
         self.prenet_type = prenet_type
         self.prenet_dropout = prenet_dropout
         in_features = [in_features] + out_features[:-1]
         if prenet_type == "bn":
             self.layers = nn.ModuleList([
-                LinearBN(in_size, out_size, bias=bias)
+                LinearBN(in_size, out_size, bias=bias, use_half=use_half)
                 for (in_size, out_size) in zip(in_features, out_features)
             ])
         elif prenet_type == "original":
             self.layers = nn.ModuleList([
-                Linear(in_size, out_size, bias=bias)
+                Linear(in_size, out_size, bias=bias, use_half=use_half)
                 for (in_size, out_size) in zip(in_features, out_features)
             ])
 
@@ -93,9 +100,10 @@ class LocationLayer(nn.Module):
             kernel_size=31,
             stride=1,
             padding=(31 - 1) // 2,
-            bias=False)
+            bias=False,
+            use_half=use_half)
         self.location_dense = Linear(
-            attention_n_filters, attention_dim, bias=False, init_gain='tanh')
+            attention_n_filters, attention_dim, bias=False, init_gain='tanh', use_half=use_half)
 
     def forward(self, attention_cat):
         processed_attention = self.location_conv(attention_cat)
@@ -108,16 +116,16 @@ class Attention(nn.Module):
     def __init__(self, attention_rnn_dim, embedding_dim, attention_dim,
                  location_attention, attention_location_n_filters,
                  attention_location_kernel_size, windowing, norm, forward_attn,
-                 trans_agent):
+                 trans_agent, use_half=False):
         super(Attention, self).__init__()
         self.query_layer = Linear(
-            attention_rnn_dim, attention_dim, bias=False, init_gain='tanh')
+            attention_rnn_dim, attention_dim, bias=False, init_gain='tanh', use_half=use_half)
         self.inputs_layer = Linear(
-            embedding_dim, attention_dim, bias=False, init_gain='tanh')
-        self.v = Linear(attention_dim, 1, bias=True)
+            embedding_dim, attention_dim, bias=False, init_gain='tanh', use_half=use_half)
+        self.v = Linear(attention_dim, 1, bias=True, use_half=use_half)
         if trans_agent:
             self.ta = nn.Linear(
-                attention_rnn_dim + embedding_dim, 1, bias=True)
+                attention_rnn_dim + embedding_dim, 1, bias=True, use_half=use_half)
         if location_attention:
             self.location_layer = LocationLayer(
                 attention_location_n_filters, attention_location_kernel_size,

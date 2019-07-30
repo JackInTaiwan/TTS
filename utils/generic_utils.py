@@ -175,17 +175,23 @@ def weight_decay(optimizer, wd):
 
 
 class NoamLR(torch.optim.lr_scheduler._LRScheduler):
-    def __init__(self, optimizer, warmup_steps=0.1, last_epoch=-1):
+    def __init__(self, optimizer, warmup_steps=0.1, last_epoch=-1, use_half=False):
         self.warmup_steps = float(warmup_steps)
+        self.use_half = use_half
         super(NoamLR, self).__init__(optimizer, last_epoch)
 
     def get_lr(self):
+        MIN_FOR_USE_HALF = 1e-4
         step = max(self.last_epoch, 1)
-        return [
-            base_lr * self.warmup_steps**0.5 * min(
-                step * self.warmup_steps**-1.5, step**-0.5)
-            for base_lr in self.base_lrs
-        ]
+        if self.use_half:
+            return [
+                max(
+                    MIN_FOR_USE_HALF,
+                    base_lr * self.warmup_steps**0.5 * min(step * self.warmup_steps**-1.5, step**-0.5)
+                ) for base_lr in self.base_lrs
+            ]
+        else:
+            return [base_lr * self.warmup_steps**0.5 * min(step * self.warmup_steps**-1.5, step**-0.5) for base_lr in self.base_lrs]
 
 
 def mk_decay(init_mk, max_epoch, n_epoch):
@@ -244,7 +250,7 @@ def set_init_dict(model_dict, checkpoint, c):
     return model_dict
 
 
-def setup_model(num_chars, c):
+def setup_model(num_chars, c, use_half=False):
     print(" > Using model: {}".format(c.model))
     MyModel = importlib.import_module('models.' + c.model.lower())
     MyModel = getattr(MyModel, c.model)
@@ -274,5 +280,6 @@ def setup_model(num_chars, c):
             forward_attn=c.use_forward_attn,
             trans_agent=c.transition_agent,
             location_attn=c.location_attn,
-            separate_stopnet=c.separate_stopnet)
+            separate_stopnet=c.separate_stopnet,
+            use_half=use_half)
     return model
