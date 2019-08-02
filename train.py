@@ -462,11 +462,18 @@ def main(args):
         criterion.cuda()
         if criterion_st: criterion_st.cuda()
         if args.restore_path:
+            # print(checkpoint['optimizer'])
+            # print('---opt', optimizer)
             optimizer.load_state_dict(checkpoint['optimizer'])
 
     # DISTRUBUTED
     if num_gpus > 1:
         model = apply_gradient_allreduce(model)
+
+    # reset lr
+    if args.reset_lr:
+        for group in optimizer.param_groups:
+            group['initial_lr'] = c.lr
 
     if c.lr_decay:
         scheduler = NoamLR(
@@ -544,7 +551,7 @@ if __name__ == '__main__':
         help='use the tensor.half as the parameters type.'
     )
     parser.add_argument(
-        '--lr_reset',
+        '--reset_lr',
         action="store_true",
         help='reset lr.'
     )

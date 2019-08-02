@@ -33,7 +33,7 @@ class Tacotron2(nn.Module):
                                attn_norm, prenet_type, prenet_dropout,
                                forward_attn, trans_agent, location_attn,
                                separate_stopnet, use_half)
-        self.postnet = Postnet(self.n_mel_channels, use_half)
+        self.postnet = Postnet(self.n_mel_channels)
 
     def shape_outputs(self, mel_outputs, mel_outputs_postnet, alignments):
         mel_outputs = mel_outputs.transpose(1, 2)
