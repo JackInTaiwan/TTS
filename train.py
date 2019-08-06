@@ -138,10 +138,10 @@ def train(model, criterion, criterion_st, optimizer, optimizer_st, scheduler,
                 postnet_loss = criterion(postnet_output, linear_input)
             else:
                 postnet_loss = criterion(postnet_output, mel_input)
-        USE_HALF_LOSS_SCALOR = 10.0
+        USE_HALF_LOSS_SCALE = 10.0
         if use_half:
-            postnet_loss = postnet_loss * USE_HALF_LOSS_SCALOR
-            decoder_loss = decoder_loss * USE_HALF_LOSS_SCALOR
+            postnet_loss = postnet_loss * USE_HALF_LOSS_SCALE
+            decoder_loss = decoder_loss * USE_HALF_LOSS_SCALE
         loss = decoder_loss + postnet_loss
 
         if not c.separate_stopnet and c.stopnet:
@@ -154,8 +154,8 @@ def train(model, criterion, criterion_st, optimizer, optimizer_st, scheduler,
 
         # backpass and check the grad norm for stop loss
         if c.separate_stopnet:
-            USE_HALF_STOP_LOSS_SCALOR = 0.01
-            stop_loss = stop_loss * USE_HALF_STOP_LOSS_SCALOR
+            USE_HALF_STOP_LOSS_SCALE = 0.01
+            stop_loss = stop_loss * USE_HALF_STOP_LOSS_SCALE
             stop_loss.backward()
             optimizer_st, _ = weight_decay(optimizer_st, c.wd)
             grad_norm_st, _ = check_update(model.decoder.stopnet, 1.0)
@@ -410,7 +410,7 @@ def main(args):
     if args.use_half:
         print(' | > Use half mode')
 
-    optimizer_eps = 1e-08 if not args.use_half else 1e-05
+    optimizer_eps = 1e-08 if not args.use_half else 1e-04
     optimizer = optim.Adam(model.parameters(), lr=c.lr, weight_decay=0, eps=optimizer_eps)
     # optimizer = optim.SGD(model.parameters(), lr=c.lr, weight_decay=0)
     if c.stopnet and c.separate_stopnet:
