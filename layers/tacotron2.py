@@ -97,7 +97,7 @@ class Encoder(nn.Module):
 class Decoder(nn.Module):
     def __init__(self, in_features, inputs_dim, r, attn_win, attn_norm,
                  prenet_type, prenet_dropout, forward_attn, trans_agent,
-                 location_attn, separate_stopnet):
+                 location_attn, separate_stopnet, use_half):
         super(Decoder, self).__init__()
         self.mel_channels = inputs_dim
         self.r = r
@@ -113,20 +113,20 @@ class Decoder(nn.Module):
 
         self.prenet = Prenet(self.mel_channels * r, prenet_type,
                              prenet_dropout,
-                             [self.prenet_dim, self.prenet_dim], bias=False)
+                             [self.prenet_dim, self.prenet_dim], bias=False, use_half=use_half)
 
         self.attention_rnn = nn.LSTMCell(self.prenet_dim + in_features,
                                          self.attention_rnn_dim)
 
         self.attention_layer = Attention(self.attention_rnn_dim, in_features,
                                          128, location_attn, 32, 31, attn_win,
-                                         attn_norm, forward_attn, trans_agent)
+                                         attn_norm, forward_attn, trans_agent, use_half)
 
         self.decoder_rnn = nn.LSTMCell(self.attention_rnn_dim + in_features,
                                        self.decoder_rnn_dim, 1)
 
         self.linear_projection = Linear(self.decoder_rnn_dim + in_features,
-                                        self.mel_channels * r)
+                                        self.mel_channels * r, use_half=use_half)
 
         self.stopnet = nn.Sequential(
             nn.Dropout(0.1),
@@ -134,7 +134,8 @@ class Decoder(nn.Module):
                 self.decoder_rnn_dim + self.mel_channels * r,
                 1,
                 bias=True,
-                init_gain='sigmoid'))
+                init_gain='sigmoid',
+                use_half=use_half))
 
         self.attention_rnn_init = nn.Embedding(1, self.attention_rnn_dim)
         self.go_frame_init = nn.Embedding(1, self.mel_channels * r)
@@ -191,10 +192,8 @@ class Decoder(nn.Module):
             self.attention_hidden, self.p_attention_dropout, self.training)
         self.attention_cell = F.dropout(
             self.attention_cell, self.p_attention_dropout, self.training)
-
         self.context = self.attention_layer(self.attention_hidden, self.inputs,
                                             self.processed_inputs, self.mask)
-
         memory = torch.cat((self.attention_hidden, self.context), -1)
         self.decoder_hidden, self.decoder_cell = self.decoder_rnn(
             memory, (self.decoder_hidden, self.decoder_cell))
@@ -202,14 +201,11 @@ class Decoder(nn.Module):
                                         self.p_decoder_dropout, self.training)
         self.decoder_cell = F.dropout(self.decoder_cell,
                                       self.p_decoder_dropout, self.training)
-
         decoder_hidden_context = torch.cat((self.decoder_hidden, self.context),
                                            dim=1)
-
         decoder_output = self.linear_projection(decoder_hidden_context)
 
         stopnet_input = torch.cat((self.decoder_hidden, decoder_output), dim=1)
-
         if self.separate_stopnet:
             stop_token = self.stopnet(stopnet_input.detach())
         else:
@@ -218,7 +214,7 @@ class Decoder(nn.Module):
 
     def forward(self, inputs, memories, mask):
         memory = self.get_go_frame(inputs).unsqueeze(0)
-        memories = self._reshape_memory(memories)
+        memories = self._reshape_memory(memories).type_as(memory)
         memories = torch.cat((memory, memories), dim=0)
         memories = self.prenet(memories)
 
