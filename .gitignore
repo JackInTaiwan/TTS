@@ -131,10 +131,13 @@ data/*
 # Data
 LJSpeech-1.1.tar.bz2
 LJSpeech-1.1/
+BZNSYP/
 mozilla_us_phonemes/
+mozilla_zh_phonemes/
 
 # Keep
 keep/
 out/
+
 # Note
 notes.py
