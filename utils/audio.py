@@ -113,7 +113,7 @@ class AudioProcessor(object):
         else:
             return S
 
-    def _stft_parameters(self, ):
+    def _stft_parameters(self):
         """Compute necessary stft parameters with given time values"""
         n_fft = (self.num_freq - 1) * 2
         hop_length = int(self.frame_shift_ms / 1000.0 * self.sample_rate)

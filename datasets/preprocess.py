@@ -119,3 +119,20 @@ def common_voice(root_path, meta_file):
             wav_file = os.path.join(root_path, "clips", cols[1] + ".wav")
             items.append([text, wav_file])
     return items
+
+
+def bznsyp(root_path, meta_file):
+    """Normalize the BZNSYP metadata to TTS format"""
+    txt_file = os.path.join(root_path, meta_file)
+    items = []
+    
+    with open(txt_file, 'r') as ttf:
+        for i, line in enumerate(ttf):
+            if i % 2 == 0:
+                id = line.split()[0]
+                wav_file = os.path.join(root_path, 'Wave', '{}.wav'.format(id))
+            else:
+                text = line.strip('\t')
+                items.append([text, wav_file])
+    
+    return items
