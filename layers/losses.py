@@ -52,7 +52,7 @@ class MSELossMasked(nn.Module):
             loss: An average loss value masked by the length.
         """
         # mask: (batch, max_len, 1)
-        use_half_mask_scalor = 0.01 # if 0.01 would casue Nan somehow
+        use_half_mask_scalor = 0.005 # if 0.01 would casue Nan somehow
         target.requires_grad = False
         mask = sequence_mask(
             sequence_length=length, max_len=target.size(1)).unsqueeze(2).float()

@@ -251,14 +251,17 @@ class Decoder(nn.Module):
             outputs += [mel_output.squeeze(1)]
             stop_tokens += [stop_token]
             alignments += [alignment]
-
             stop_flags[0] = stop_flags[0] or stop_token > 0.5
             stop_flags[1] = stop_flags[1] or (alignment[0, -2:].sum() > 0.8
                                               and t > inputs.shape[1])
-            stop_flags[2] = t > inputs.shape[1] * 2
+            #-
+            # stop_flags[2] = t > inputs.shape[1] * 2
+            stop_flags[2] = True
             if all(stop_flags):
                 stop_count += 1
-                if stop_count > 20:
+                #-
+                # if stop_count > 20:
+                if stop_count > 5:
                     break
             elif len(outputs) == self.max_decoder_steps:
                 print("   | > Decoder stopped with 'max_decoder_steps")
@@ -269,7 +272,6 @@ class Decoder(nn.Module):
 
         outputs, stop_tokens, alignments = self._parse_outputs(
             outputs, stop_tokens, alignments)
-
         return outputs, stop_tokens, alignments
 
     def inference_truncated(self, inputs):
@@ -298,7 +300,9 @@ class Decoder(nn.Module):
             stop_flags[0] = stop_flags[0] or stop_token > 0.5
             stop_flags[1] = stop_flags[1] or (alignment[0, -2:].sum() > 0.8
                                               and t > inputs.shape[1])
-            stop_flags[2] = t > inputs.shape[1] * 2
+            # stop_flags[2] = t > inputs.shape[1] * 2
+            #-
+            stop_flags[2] = True
             if all(stop_flags):
                 stop_count += 1
                 if stop_count > 20:

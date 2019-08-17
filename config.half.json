@@ -34,8 +34,8 @@
     "model": "Tacotron2",          // one of the model in models/    
     "grad_clip": 1,                // upper limit for gradients for clipping.
     "epochs": 1000,                // total number of epochs to train.
-    "lr": 0.0001,                  // Initial learning rate. If Noam decay is active, maximum learning rate.
-    "lr_decay": false,             // if true, Noam learning rate decaying is applied through training.
+    "lr": 0.001,                  // Initial learning rate. If Noam decay is active, maximum learning rate.
+    "lr_decay": true,             // if true, Noam learning rate decaying is applied through training.
     "warmup_steps": 3000,          // Noam decay steps to increase the learning rate from 0 to "lr"
     "windowing": false,            // Enables attention windowing. Used only in eval mode.
     "memory_size": 5,              // ONLY TACOTRON - memory queue size used to queue network predictions to feed autoregressive connection. Useful if r < 5. 
@@ -60,7 +60,7 @@
     "print_step": 50,       // Number of steps to log traning on console.
     "batch_group_size": 0,  //Number of batches to shuffle after bucketing.
 
-    "run_eval": false,
+    "run_eval": true,
     "test_delay_epochs": 0,  //Until attention is aligned, testing only wastes computation time.
     "test_sentences_file": null,  // set a file to load sentences to be used for testing. If it is null then we use default english sentences.
     "data_path": "/home/ubuntu/TTS/LJSpeech-1.1",  // DATASET-RELATED: can overwritten from command argument
