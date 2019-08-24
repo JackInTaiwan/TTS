@@ -51,7 +51,7 @@ class Encoder(nn.Module):
         convolutions = []
         for _ in range(3):
             convolutions.append(
-                ConvBNBlock(in_features, in_features, 5, 'relu'))
+                ConvBNBlock(in_features, in_features, 15, 'relu'))
         self.convolutions = nn.Sequential(*convolutions)
         self.lstm = nn.LSTM(
             in_features,
