@@ -7,7 +7,7 @@ verify_ssl = true
 
 [packages]
 numpy = "==1.14.3"
-librosa = "==0.6.2"
+librosa = "==0.7.0"
 unidecode = "==0.4.20"
 tensorboard = "*"
 tensorboardx = "*"
