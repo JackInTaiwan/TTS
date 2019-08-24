@@ -281,5 +281,6 @@ def setup_model(num_chars, c, use_half=False):
             trans_agent=c.transition_agent,
             location_attn=c.location_attn,
             separate_stopnet=c.separate_stopnet,
-            use_half=use_half)
+            use_half=use_half,
+            embedding_dim=128)
     return model
