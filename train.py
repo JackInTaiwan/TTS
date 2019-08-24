@@ -30,9 +30,11 @@ from utils.text.symbols import phonemes, symbols
 from utils.visual import plot_alignment, plot_spectrogram
 
 torch.backends.cudnn.enabled = True
+# torch.backends.cudnn.enabled = False
 torch.backends.cudnn.benchmark = False
 torch.manual_seed(54321)
 use_cuda = torch.cuda.is_available()
+# use_cuda = False
 num_gpus = torch.cuda.device_count() if use_cuda else 1
 print(" > Using CUDA: ", use_cuda)
 print(" > Number of GPUs: ", num_gpus)
@@ -86,8 +88,8 @@ def train(model, criterion, criterion_st, optimizer, optimizer_st, scheduler,
     avg_step_time = 0
     print("\n > Epoch {}/{}".format(epoch, c.epochs), flush=True)
     batch_n_iter = int(len(data_loader.dataset) / (c.batch_size * num_gpus))
+    start_time = time.time()
     for num_iter, data in enumerate(data_loader):
-        start_time = time.time()
         # setup input data
         text_input = data[0]
         text_lengths = data[1]
@@ -164,6 +166,7 @@ def train(model, criterion, criterion_st, optimizer, optimizer_st, scheduler,
             grad_norm_st = 0
 
         step_time = time.time() - start_time
+        start_time = time.time()
         epoch_time += step_time
 
         if current_step % c.print_step == 0:
