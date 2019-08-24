@@ -1,9 +1,9 @@
 import os
 import librosa
-import soundfile as sf
 import pickle
 import copy
 import numpy as np
+import soundfile as sf
 from pprint import pprint
 from scipy import signal, io
 
@@ -51,9 +51,10 @@ class AudioProcessor(object):
         self.clip_norm = clip_norm
         self.do_trim_silence = do_trim_silence
         self.n_fft, self.hop_length, self.win_length = self._stft_parameters()
+        print(" | > Audio Processor attributes.")
         members = vars(self)
         for key, value in members.items():
-            print(" | > {}:{}".format(key, value))
+            print("   | > {}:{}".format(key, value))
 
     def save_wav(self, wav, path):
         wav_norm = wav * (32767 / max(0.01, np.max(np.abs(wav))))
@@ -113,11 +114,13 @@ class AudioProcessor(object):
         else:
             return S
 
-    def _stft_parameters(self):
+    def _stft_parameters(self, ):
         """Compute necessary stft parameters with given time values"""
         n_fft = (self.num_freq - 1) * 2
         hop_length = int(self.frame_shift_ms / 1000.0 * self.sample_rate)
         win_length = int(self.frame_length_ms / 1000.0 * self.sample_rate)
+        print(" | > fft size: {}, hop length: {}, win length: {}".format(
+            n_fft, hop_length, win_length))
         return n_fft, hop_length, win_length
 
     def _amp_to_db(self, x):
@@ -173,14 +176,6 @@ class AudioProcessor(object):
         else:
             return self._griffin_lim(S**self.power)
 
-    def out_linear_to_mel(self, linear_spec):
-        S = self._denormalize(linear_spec)
-        S = self._db_to_amp(S + self.ref_level_db)  
-        S = self._linear_to_mel(np.abs(S))
-        S = self._amp_to_db(S) - self.ref_level_db
-        mel = self._normalize(S)
-        return mel
-
     def _griffin_lim(self, S):
         angles = np.exp(2j * np.pi * np.random.rand(*S.shape))
         S_complex = np.abs(S).astype(np.complex)
@@ -218,32 +213,30 @@ class AudioProcessor(object):
         return librosa.effects.trim(
             wav, top_db=40, frame_length=1024, hop_length=256)[0]
 
-    # WaveRNN repo specific functions
-    # def mulaw_encode(self, wav, qc):
-    #     mu = qc - 1
-    #     wav_abs = np.minimum(np.abs(wav), 1.0)
-    #     magnitude = np.log(1 + mu * wav_abs) / np.log(1. + mu)
-    #     signal = np.sign(wav) * magnitude
-    #     # Quantize signal to the specified number of levels.
-    #     signal = (signal + 1) / 2 * mu + 0.5
-    #     return signal.astype(np.int32)
+    @staticmethod
+    def mulaw_encode(wav, qc):
+        mu = 2 ** qc - 1
+        # wav_abs = np.minimum(np.abs(wav), 1.0)
+        signal = np.sign(wav) * np.log(1 + mu * np.abs(wav)) / np.log(1. + mu)
+        # Quantize signal to the specified number of levels.
+        signal = (signal + 1) / 2 * mu + 0.5
+        return np.floor(signal)
 
-    # def mulaw_decode(self, wav, qc):
-    #     """Recovers waveform from quantized values."""
-    #     mu = qc - 1
-    #     # Map values back to [-1, 1].
-    #     casted = wav.astype(np.float32)
-    #     signal = 2 * (casted / mu) - 1
-    #     # Perform inverse of mu-law transformation.
-    #     magnitude = (1 / mu) * ((1 + mu) ** abs(signal) - 1)
-    #     return np.sign(signal) * magnitude
+    @staticmethod
+    def mulaw_decode(wav, qc):
+        """Recovers waveform from quantized values."""
+        mu = 2 ** qc - 1
+        x = np.sign(wav) / mu * ((1 + mu) ** np.abs(wav) - 1)
+        return x
 
-    def load_wav(self, filename, encode=False):
-        x, sr = sf.read(filename)
+    def load_wav(self, filename, sr=None):
+        if sr is None:
+            x, sr = sf.read(filename)
+        else:
+            x, sr = librosa.load(filename, sr=sr)
         if self.do_trim_silence:
             x = self.trim_silence(x)
-        # sr, x = io.wavfile.read(filename)
-        assert self.sample_rate == sr
+        assert self.sample_rate == sr, "%s vs %s"%(self.sample_rate, sr)
         return x
 
     def encode_16bits(self, x):

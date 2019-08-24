@@ -1,7 +1,3 @@
-.idea/
-*.pyc
-.DS_Store
-./__init__.py
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -42,6 +38,7 @@ pip-delete-this-directory.txt
 # Unit test / coverage reports
 htmlcov/
 .tox/
+.nox/
 .coverage
 .coverage.*
 .cache
@@ -49,6 +46,7 @@ nosetests.xml
 coverage.xml
 *.cover
 .hypothesis/
+.pytest_cache/
 
 # Translations
 *.mo
@@ -56,9 +54,8 @@ coverage.xml
 
 # Django stuff:
 *.log
-.static_storage/
-.media/
 local_settings.py
+db.sqlite3
 
 # Flask stuff:
 instance/
@@ -75,6 +72,10 @@ target/
 
 # Jupyter Notebook
 .ipynb_checkpoints
+
+# IPython
+profile_default/
+ipython_config.py
 
 # pyenv
 .python-version
@@ -106,38 +107,6 @@ venv.bak/
 
 # mypy
 .mypy_cache/
-
-# vim
-*.swp
-*.swm
-*.swn
-*.swo
-
-# pytorch models
-*.pth.tar
-result/
-
-# setup.py
-version.py
-
-# jupyter dummy files
-core
-
-tests/outputs/*
-TODO.txt
-.vscode/*
-data/*
-
-# Data
-LJSpeech-1.1.tar.bz2
-LJSpeech-1.1/
-BZNSYP/
-mozilla_us_phonemes/
-mozilla_zh_phonemes/
-
-# Keep
-keep/
-out/
-
-# Note
-notes.py
+.dmypy.json
+d"mypy.json
+*.pyc

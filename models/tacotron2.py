@@ -19,19 +19,21 @@ class Tacotron2(nn.Module):
                  forward_attn=False,
                  trans_agent=False,
                  location_attn=True,
-                 separate_stopnet=True):
+                 separate_stopnet=True,
+                 use_half=False,
+                 embedding_dim=512):
         super(Tacotron2, self).__init__()
         self.n_mel_channels = 80
         self.n_frames_per_step = r
-        self.embedding = nn.Embedding(num_chars, 512)
-        std = sqrt(2.0 / (num_chars + 512))
+        self.embedding = nn.Embedding(num_chars, embedding_dim)
+        std = sqrt(2.0 / (num_chars + embedding_dim))
         val = sqrt(3.0) * std  # uniform bounds for std
         self.embedding.weight.data.uniform_(-val, val)
-        self.encoder = Encoder(512)
-        self.decoder = Decoder(512, self.n_mel_channels, r, attn_win,
+        self.encoder = Encoder(embedding_dim)
+        self.decoder = Decoder(embedding_dim, self.n_mel_channels, r, attn_win,
                                attn_norm, prenet_type, prenet_dropout,
                                forward_attn, trans_agent, location_attn,
-                               separate_stopnet)
+                               separate_stopnet, use_half)
         self.postnet = Postnet(self.n_mel_channels)
 
     def shape_outputs(self, mel_outputs, mel_outputs_postnet, alignments):
